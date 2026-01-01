@@ -1,0 +1,18 @@
+# Vercel Ignore
+# Files and directories that should not be uploaded to Vercel
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Local environment files
+.env.local
+.env*.local
+
+# Development files
+node_modules
+.next
+
+# SQLite database
+sqlite.db
