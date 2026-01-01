@@ -180,11 +180,11 @@ export async function generateDailyDigest(model?: string, userId: string | null 
             return { success: false, error: 'No stories from the last 24 hours to summarize' };
         }
 
-        // 3. Generate digest with Ollama
+        // 3. Generate digest with Groq AI
         const result = await generateDigest(
             recentStories.map(s => ({
                 title: s.title,
-                content: s.content,
+                content: s.content || undefined,
                 source: s.source || 'Unknown',
             })),
             model
