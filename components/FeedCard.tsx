@@ -41,8 +41,21 @@ export function FeedCard({ story }: FeedCardProps) {
     const timeAgo = formatDistanceToNow(new Date(story.pubDate), { addSuffix: true });
 
     // Clean HTML and get text content
-    const textContent = story.content?.replace(/<[^>]*>/g, '') || '';
-    const previewText = textContent.slice(0, 280);
+    // Clean HTML and get text content
+    let textContent = story.content?.replace(/<[^>]*>/g, '') || '';
+
+    // Aggressive filtering for "Comments" artifacts
+    const lowerContent = textContent.trim().toLowerCase();
+    if (
+        lowerContent === 'comments' ||
+        lowerContent === 'comments.' ||
+        lowerContent.startsWith('comments\n') ||
+        (lowerContent.length < 15 && lowerContent.includes('comments'))
+    ) {
+        textContent = '';
+    }
+
+    const previewText = textContent.slice(0, 180);
 
     // Calculate reading time (avg 200 words per minute)
     const wordCount = textContent.split(/\s+/).filter(Boolean).length;
@@ -69,6 +82,15 @@ export function FeedCard({ story }: FeedCardProps) {
         topics = ['News'];
     }
 
+    const renderText = (val: any) => {
+        if (typeof val === 'string') return val;
+        if (!val) return '';
+        if (typeof val === 'object') {
+            return val._ || val.name || JSON.stringify(val);
+        }
+        return String(val);
+    };
+
     return (
         <article className="story-card">
             <div className="story-card-content">
@@ -85,16 +107,14 @@ export function FeedCard({ story }: FeedCardProps) {
                                 </svg>
                             </div>
                         )}
-                        <span>{story.feed.title}</span>
+                        <span>{renderText(story.feed.title)}</span>
                     </div>
                     <time>{timeAgo}</time>
                 </div>
 
-
-
                 {/* Title */}
                 <a href={story.link} target="_blank" rel="noopener noreferrer" className="story-title-link">
-                    <h3 className="story-title">{story.title}</h3>
+                    <h3 className="story-title">{renderText(story.title)}</h3>
                 </a>
 
                 {/* Author if available */}
@@ -104,20 +124,20 @@ export function FeedCard({ story }: FeedCardProps) {
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                             <circle cx="12" cy="7" r="4" />
                         </svg>
-                        <span>{story.author}</span>
+                        <span>{renderText(story.author)}</span>
                     </div>
                 )}
 
                 {/* Content preview */}
                 <p className="story-excerpt">
-                    {previewText}{previewText.length >= 280 ? '...' : ''}
+                    {renderText(previewText)}{previewText.length >= 180 ? '...' : ''}
                 </p>
 
                 {/* Topic Badges */}
                 {topics.length > 0 && (
                     <div className="story-badges" style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
                         {topics.map((topic, i) => (
-                            <span key={i} className="story-badge">{topic}</span>
+                            <span key={i} className="story-badge">{renderText(topic)}</span>
                         ))}
                     </div>
                 )}

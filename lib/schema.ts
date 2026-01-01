@@ -3,14 +3,17 @@ import { sqliteTable, text, integer, index, unique } from "drizzle-orm/sqlite-co
 
 export const feeds = sqliteTable("feeds", {
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-    url: text("url").notNull().unique(),
+    url: text("url").notNull(),
+    userId: text("user_id"), // Optional for guest mode or null for global
     title: text("title"),
     description: text("description"),
     siteUrl: text("siteUrl"),
     iconUrl: text("iconUrl"),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
-});
+}, (t) => ({
+    userUrlUnique: unique().on(t.url, t.userId),
+}));
 
 export const stories = sqliteTable("stories", {
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -33,6 +36,7 @@ export const stories = sqliteTable("stories", {
 // NEW: Daily Digest Reports table
 export const reports = sqliteTable("reports", {
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id"),
     title: text("title").notNull(),
     content: text("content").notNull(), // Markdown content from LLM
     storyCount: integer("story_count").notNull(),

@@ -409,7 +409,7 @@ h6 {
 .story-card {
   display: flex;
   flex-direction: column;
-  height: 420px;
+  height: 280px;
   background: rgba(24, 24, 27, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

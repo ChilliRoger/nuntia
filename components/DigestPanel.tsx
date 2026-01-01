@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { generateDailyDigest, getOllamaStatus, getLatestReport } from '@/app/actions';
+import { useAuth } from '@/lib/auth-context';
 import type { Report } from '@/lib/schema';
 import { jsPDF } from 'jspdf';
 
 export function DigestPanel() {
+    const { user, loading: authLoading } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -26,18 +28,21 @@ export function DigestPanel() {
         }
     }
 
-    // Load latest report when panel opens
+    // Load latest report when panel opens and user is logged in
     useEffect(() => {
-        if (isOpen && !report) {
-            getLatestReport().then(r => setReport(r));
+        if (isOpen && !report && user) {
+            getLatestReport(user.uid).then(r => setReport(r));
+        } else if (!user) {
+            setReport(null);
         }
-    }, [isOpen, report]);
+    }, [isOpen, report, user]);
 
     async function handleGenerate() {
+        if (!user) return;
         setLoading(true);
         setError(null);
 
-        const result = await generateDailyDigest(selectedModel || undefined);
+        const result = await generateDailyDigest(selectedModel || undefined, user.uid);
 
         if (result.success && result.report) {
             setReport(result.report);
@@ -166,7 +171,7 @@ export function DigestPanel() {
 
     return (
         <>
-            <button onClick={() => setIsOpen(true)} className="btn btn-primary">
+            <button onClick={() => setIsOpen(true)} className="btn btn-primary" disabled={!user}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
