@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { addFeed, deleteFeed } from '@/app/actions';
 import type { Feed } from '@/lib/schema';
 
@@ -9,6 +10,13 @@ export function FeedManager({ feeds }: { feeds: Feed[] }) {
     const [url, setUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Use portal for modal to avoid z-index/stacking context issues
+    const [mounted, setMounted] = useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault();
@@ -24,6 +32,49 @@ export function FeedManager({ feeds }: { feeds: Feed[] }) {
         }
         setLoading(false);
     }
+
+    const modalContent = isOpen ? (
+        <div className="modal-overlay" onClick={() => setIsOpen(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setIsOpen(false)} className="modal-close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+
+                <h3 className="modal-title">Add New Feed</h3>
+                <p className="modal-subtitle">Enter an RSS or Atom feed URL to subscribe</p>
+
+                <form onSubmit={handleAdd}>
+                    <div className="input-group">
+                        <svg className="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                        <input
+                            type="url"
+                            required
+                            placeholder="https://example.com/rss.xml"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="input"
+                            autoFocus
+                        />
+                    </div>
+
+                    {error && <div className="error-message">{error}</div>}
+
+                    <div className="modal-actions">
+                        <button type="button" onClick={() => setIsOpen(false)} className="btn btn-ghost">
+                            Cancel
+                        </button>
+                        <button type="submit" disabled={loading} className="btn btn-primary">
+                            {loading ? 'Adding...' : 'Subscribe'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    ) : null;
 
     return (
         <>
@@ -79,49 +130,7 @@ export function FeedManager({ feeds }: { feeds: Feed[] }) {
                 </div>
             </div>
 
-            {/* Modal */}
-            {isOpen && (
-                <div className="modal-overlay" onClick={() => setIsOpen(false)}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setIsOpen(false)} className="modal-close">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                        </button>
-
-                        <h3 className="modal-title">Add New Feed</h3>
-                        <p className="modal-subtitle">Enter an RSS or Atom feed URL to subscribe</p>
-
-                        <form onSubmit={handleAdd}>
-                            <div className="input-group">
-                                <svg className="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                                </svg>
-                                <input
-                                    type="url"
-                                    required
-                                    placeholder="https://example.com/rss.xml"
-                                    value={url}
-                                    onChange={(e) => setUrl(e.target.value)}
-                                    className="input"
-                                    autoFocus
-                                />
-                            </div>
-
-                            {error && <div className="error-message">{error}</div>}
-
-                            <div className="modal-actions">
-                                <button type="button" onClick={() => setIsOpen(false)} className="btn btn-ghost">
-                                    Cancel
-                                </button>
-                                <button type="submit" disabled={loading} className="btn btn-primary">
-                                    {loading ? 'Adding...' : 'Subscribe'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {mounted && createPortal(modalContent, document.body)}
         </>
     );
 }
