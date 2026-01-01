@@ -1,131 +1,76 @@
 /**
- * Ollama Service - Connects to local Ollama instance
- * Production-ready with model detection and comprehensive error handling
- * Gracefully degrades when Ollama is not available (e.g., in serverless)
+ * Groq AI Service - Free, fast AI for digest generation
+ * Works perfectly in serverless environments like Vercel
  */
 
-const OLLAMA_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const IS_VERCEL = process.env.VERCEL === '1';
+import Groq from 'groq-sdk';
 
-// Warn if Ollama is expected but not configured properly
-if (IS_PRODUCTION && IS_VERCEL && typeof window === 'undefined') {
-    console.warn('⚠️ Ollama is not available in Vercel serverless environment. Digest generation will be disabled.');
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const DEFAULT_MODEL = 'llama-3.3-70b-versatile'; // Fast and free
+
+// Initialize Groq client
+const groq = GROQ_API_KEY ? new Groq({ apiKey: GROQ_API_KEY }) : null;
+
+if (!GROQ_API_KEY && typeof window === 'undefined') {
+    console.warn('⚠️ GROQ_API_KEY not set. AI digest generation will be disabled.');
+    console.log('💡 Get your free API key at: https://console.groq.com/');
 }
 
-interface OllamaModel {
-    name: string;
-    size: number;
-    modified_at: string;
-}
-
-interface OllamaGenerateResponse {
-    model: string;
-    response: string;
-    done: boolean;
-    total_duration?: number;
+interface GroqResponse {
+    success: boolean;
+    content?: string;
+    model?: string;
+    error?: string;
 }
 
 /**
- * Check if Ollama server is running
- * Returns false in serverless environments
+ * Check if Groq AI is available
  */
 export async function checkOllamaHealth(): Promise<boolean> {
-    // Ollama doesn't work in serverless environments
-    if (IS_VERCEL) {
-        console.log('ℹ️ Ollama health check skipped (serverless environment)');
-        return false;
-    }
-
-    try {
-        const res = await fetch(`${OLLAMA_BASE_URL}/api/tags`, {
-            method: 'GET',
-            signal: AbortSignal.timeout(5000),
-        });
-        return res.ok;
-    } catch (error) {
-        console.log('ℹ️ Ollama not available:', error instanceof Error ? error.message : 'Unknown error');
-        return false;
-    }
+    return groq !== null && GROQ_API_KEY !== '';
 }
 
 /**
- * Get list of available models from Ollama
+ * Get list of available Groq models
  */
 export async function listModels(): Promise<string[]> {
-    try {
-        const res = await fetch(`${OLLAMA_BASE_URL}/api/tags`, {
-            signal: AbortSignal.timeout(5000),
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.models?.map((m: OllamaModel) => m.name) || [];
-    } catch {
-        return [];
-    }
-}
-
-/**
- * Get the best available model, preferring smaller/faster models for summarization
- */
-export async function getBestAvailableModel(): Promise<string | null> {
-    const models = await listModels();
-    if (models.length === 0) return null;
-
-    // Preferred models in order (smaller/faster first for quick summaries)
-    const preferredModels = [
-        'llama3.2',
-        'llama3.2:1b',
-        'llama3.2:3b',
-        'llama3.1',
-        'llama3.1:8b',
-        'llama3',
-        'mistral',
-        'mistral:7b',
-        'gemma2',
-        'gemma2:2b',
-        'gemma',
-        'phi3',
-        'qwen2',
+    if (!groq) return [];
+    
+    return [
+        'llama-3.3-70b-versatile',
+        'llama-3.1-70b-versatile',
+        'mixtral-8x7b-32768',
+        'gemma2-9b-it'
     ];
-
-    for (const preferred of preferredModels) {
-        const found = models.find(m => m.toLowerCase().startsWith(preferred.toLowerCase()));
-        if (found) return found;
-    }
-
-    // Return first available model if no preferred match
-    return models[0];
 }
 
 /**
- * Generate a daily digest from story summaries
+ * Generate AI digest from stories using Groq
  */
 export async function generateDigest(
-    stories: { title: string; content?: string | null; source: string }[],
+    stories: { title: string; content?: string; source: string }[],
     model?: string
-): Promise<{ success: boolean; content?: string; error?: string; model?: string }> {
-
-    // Auto-detect model if not specified
-    const selectedModel = model || await getBestAvailableModel();
-
-    if (!selectedModel) {
+): Promise<GroqResponse> {
+    if (!groq) {
         return {
             success: false,
-            error: 'No models available. Install one with: ollama pull llama3.2:1b'
+            error: 'Groq AI not configured. Add GROQ_API_KEY environment variable. Get free key at: https://console.groq.com/'
         };
     }
 
-    // Build prompt with story summaries (limit context size)
-    const storySummaries = stories
-        .slice(0, 15)
-        .map((s, i) => {
-            const snippet = (s.content || '').replace(/<[^>]*>/g, '').slice(0, 150);
-            return `${i + 1}. [${s.source}] ${s.title}${snippet ? '\n   ' + snippet + '...' : ''}`;
-        })
-        .join('\n\n');
+    try {
+        const selectedModel = model || DEFAULT_MODEL;
 
-    const prompt = `You are a professional news editor creating a concise daily briefing.
+        // Build prompt with story summaries (limit context size)
+        const storySummaries = stories
+            .slice(0, 15)
+            .map((s, i) => {
+                const snippet = (s.content || '').replace(/<[^>]*>/g, '').slice(0, 150);
+                return `${i + 1}. [${s.source}] ${s.title}${snippet ? '\n   ' + snippet + '...' : ''}`;
+            })
+            .join('\n\n');
+
+        const prompt = `You are a professional news editor creating a concise daily briefing.
 
 Today's stories from subscribed RSS feeds:
 
@@ -138,52 +83,56 @@ Create a brief daily digest with:
 
 Be concise and professional. Use markdown formatting.`;
 
-    try {
-        const res = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: selectedModel,
-                prompt,
-                stream: false,
-                options: {
-                    temperature: 0.7,
-                    num_predict: 800, // Shorter for faster response
-                },
-            }),
-            signal: AbortSignal.timeout(90000), // 90 second timeout
+        console.log('🤖 Generating digest with Groq:', selectedModel);
+        
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt
+                }
+            ],
+            model: selectedModel,
+            temperature: 0.7,
+            max_tokens: 1000,
         });
 
-        if (!res.ok) {
-            const errorText = await res.text();
-            // Parse Ollama error format
-            try {
-                const errorJson = JSON.parse(errorText);
-                if (errorJson.error?.includes('not found')) {
-                    return {
-                        success: false,
-                        error: `Model "${selectedModel}" not found. Run: ollama pull ${selectedModel}`
-                    };
-                }
-                return { success: false, error: errorJson.error || 'Ollama request failed' };
-            } catch {
-                return { success: false, error: `Ollama error: ${errorText.slice(0, 100)}` };
-            }
+        const content = completion.choices[0]?.message?.content || '';
+        
+        if (!content) {
+            return {
+                success: false,
+                error: 'No content generated'
+            };
         }
 
-        const data: OllamaGenerateResponse = await res.json();
+        console.log('✅ Digest generated successfully');
+
         return {
             success: true,
-            content: data.response,
-            model: data.model,
+            content,
+            model: selectedModel,
         };
     } catch (error: any) {
-        if (error.name === 'TimeoutError' || error.name === 'AbortError') {
-            return { success: false, error: 'Request timed out. The model may still be loading.' };
+        console.error('❌ Groq error:', error);
+        
+        if (error.status === 401) {
+            return {
+                success: false,
+                error: 'Invalid Groq API key. Get a free key at: https://console.groq.com/'
+            };
         }
-        if (error.cause?.code === 'ECONNREFUSED') {
-            return { success: false, error: 'Cannot connect to Ollama. Run: ollama serve' };
+        
+        if (error.status === 429) {
+            return {
+                success: false,
+                error: 'Rate limit exceeded. Please try again in a moment.'
+            };
         }
-        return { success: false, error: error.message || 'Failed to generate digest' };
+
+        return {
+            success: false,
+            error: error.message || 'Failed to generate digest'
+        };
     }
 }

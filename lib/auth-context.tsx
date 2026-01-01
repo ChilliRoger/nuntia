@@ -9,10 +9,6 @@ import {
     signOut as firebaseSignOut,
     sendPasswordResetEmail,
     updateProfile,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
 } from 'firebase/auth';
 import { auth, isConfigured } from '@/lib/firebase';
 
@@ -23,7 +19,6 @@ interface AuthContextType {
     isConfigured: boolean;
     signIn: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, displayName?: string) => Promise<void>;
-    signInWithGoogle: () => Promise<void>;
     signOut: () => Promise<void>;
     resetPassword: (email: string) => Promise<void>;
     clearError: () => void;
@@ -41,18 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false);
             return;
         }
-
-        // Check for redirect result (for Google Sign-In redirect flow)
-        getRedirectResult(auth)
-            .then((result) => {
-                if (result) {
-                    console.log('✅ Google Sign-In successful (redirect):', result.user.email);
-                }
-            })
-            .catch((error) => {
-                console.error('Redirect result error:', error);
-                setError(getFirebaseErrorMessage(error.code));
-            });
 
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
@@ -106,49 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const signInWithGoogle = async () => {
-        setError(null);
-        try {
-            const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({
-                prompt: 'select_account'
-            });
-            
-            console.log('🔐 Attempting Google Sign-In...');
-            console.log('📍 Current domain:', window.location.hostname);
-            console.log('🔥 Firebase authDomain:', auth.app.options.authDomain);
-            
-            try {
-                // Try popup first
-                console.log('Trying popup method...');
-                const result = await signInWithPopup(auth, provider);
-                console.log('✅ Google Sign-In successful (popup):', result.user.email);
-            } catch (popupError: any) {
-                console.warn('Popup failed, trying redirect...', popupError.code);
-                
-                // If popup is blocked or fails, use redirect
-                if (popupError.code === 'auth/popup-blocked' || 
-                    popupError.code === 'auth/popup-closed-by-user' ||
-                    popupError.code === 'auth/cancelled-popup-request') {
-                    console.log('Using redirect method instead...');
-                    await signInWithRedirect(auth, provider);
-                    // Don't throw - redirect will handle the flow
-                    return;
-                }
-                throw popupError;
-            }
-        } catch (err: any) {
-            console.error('❌ Google Sign-In Error:', {
-                code: err.code,
-                message: err.message,
-                fullError: err
-            });
-            const message = getFirebaseErrorMessage(err.code);
-            setError(message);
-            throw new Error(message);
-        }
-    };
-
     const clearError = () => setError(null);
 
     return (
@@ -159,7 +99,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isConfigured,
             signIn,
             signUp,
-            signInWithGoogle,
             signOut,
             resetPassword,
             clearError,
@@ -206,8 +145,18 @@ function getFirebaseErrorMessage(code: string): string {
             return 'Sign-in cancelled. Please try again.';
         case 'auth/internal-error':
             return 'Internal error. Please check your configuration.';
+        case 'auth/network-request-failed':
+            return 'Network error. Please check your internet connection.';
+        case 'auth/timeout':
+            return 'Request timed out. Please try again.';
+        case 'unknown':
+        case 'undefined':
+            return 'Configuration error. Please ensure Firebase is set up correctly. Check the diagnostics page.';
         default:
+            if (!code || code === 'undefined') {
+                return 'Authentication setup error. Please check environment variables at /diagnostics';
+            }
             console.warn('Unhandled Firebase error code:', code);
-            return `Authentication error: ${code}. Please try again or contact support.`;
+            return `Authentication error (${code}). Please try again or check /diagnostics page.`;
     }
 }
