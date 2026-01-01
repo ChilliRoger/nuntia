@@ -1,0 +1,100 @@
+:root {
+  /* Cyberpunk / Newsroom Dark Theme */
+  --background: #09090b;
+  --foreground: #ededed;
+  
+  --card-bg: #18181b;
+  --card-border: #27272a;
+  
+  --primary: #fbbf24; /* Amber/Gold for a premium news feel */
+  --primary-foreground: #000000;
+  
+  --secondary: #27272a;
+  --secondary-foreground: #ffffff;
+  
+  --accent: #0ea5e9; /* Electric blue for digital feel */
+  --accent-foreground: #ffffff;
+  
+  --muted: #a1a1aa;
+  
+  --radius: 0.5rem;
+  
+  /* Typography */
+  --font-serif: 'Merriweather', serif;
+  --font-sans: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Typography Utilities */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Utility Classes for Bento Grid */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .col-span-2 {
+    grid-column: span 2;
+  }
+  
+  .row-span-2 {
+    grid-row: span 2;
+  }
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: var(--primary);
+}
