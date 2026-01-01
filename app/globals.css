@@ -73,7 +73,7 @@ h6 {
 .app-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   padding-bottom: 1.5rem;
   margin-bottom: 2rem;
   border-bottom: 1px solid var(--card-border);
@@ -626,15 +626,17 @@ h6 {
 
 /* Story Browser Controls */
 .browser-controls {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1.5rem;
+  width: 100%;
 }
 
 .search-bar {
   position: relative;
-  max-width: 32rem;
+  max-width: 42rem;
   width: 100%;
 }
 
@@ -649,28 +651,39 @@ h6 {
 
 .search-input {
   width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
+  padding: 1rem 1rem 1rem 3rem;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 9999px;
   color: var(--foreground);
-  font-size: 1rem;
+  font-size: 1.125rem;
   transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .topic-filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-bottom: 0.5rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  width: fit-content;
+  max-width: 100%;
+  justify-content: flex-start;
   scrollbar-width: none;
-  /* Hide scrollbar */
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+}
+
+.topic-filters::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-chip {
