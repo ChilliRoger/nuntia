@@ -11,6 +11,8 @@ import {
     updateProfile,
     GoogleAuthProvider,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
 } from 'firebase/auth';
 import { auth, isConfigured } from '@/lib/firebase';
 
@@ -39,6 +41,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false);
             return;
         }
+
+        // Check for redirect result (for Google Sign-In redirect flow)
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result) {
+                    console.log('✅ Google Sign-In successful (redirect):', result.user.email);
+                }
+            })
+            .catch((error) => {
+                console.error('Redirect result error:', error);
+                setError(getFirebaseErrorMessage(error.code));
+            });
 
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
@@ -96,11 +110,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(null);
         try {
             const provider = new GoogleAuthProvider();
-            console.log('Attempting Google Sign-In...');
-            const result = await signInWithPopup(auth, provider);
-            console.log('Google Sign-In successful:', result.user.email);
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            
+            console.log('🔐 Attempting Google Sign-In...');
+            console.log('📍 Current domain:', window.location.hostname);
+            console.log('🔥 Firebase authDomain:', auth.app.options.authDomain);
+            
+            try {
+                // Try popup first
+                console.log('Trying popup method...');
+                const result = await signInWithPopup(auth, provider);
+                console.log('✅ Google Sign-In successful (popup):', result.user.email);
+            } catch (popupError: any) {
+                console.warn('Popup failed, trying redirect...', popupError.code);
+                
+                // If popup is blocked or fails, use redirect
+                if (popupError.code === 'auth/popup-blocked' || 
+                    popupError.code === 'auth/popup-closed-by-user' ||
+                    popupError.code === 'auth/cancelled-popup-request') {
+                    console.log('Using redirect method instead...');
+                    await signInWithRedirect(auth, provider);
+                    // Don't throw - redirect will handle the flow
+                    return;
+                }
+                throw popupError;
+            }
         } catch (err: any) {
-            console.error('Google Sign-In Error:', {
+            console.error('❌ Google Sign-In Error:', {
                 code: err.code,
                 message: err.message,
                 fullError: err

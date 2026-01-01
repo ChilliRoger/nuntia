@@ -16,6 +16,18 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Debug: Log config status (values hidden for security)
+if (typeof window !== 'undefined') {
+    console.log('🔍 Firebase Environment Check:', {
+        apiKey: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : '❌ MISSING',
+        authDomain: firebaseConfig.authDomain || '❌ MISSING',
+        projectId: firebaseConfig.projectId || '❌ MISSING',
+        storageBucket: firebaseConfig.storageBucket || '❌ MISSING',
+        messagingSenderId: firebaseConfig.messagingSenderId || '❌ MISSING',
+        appId: firebaseConfig.appId ? `${firebaseConfig.appId.substring(0, 15)}...` : '❌ MISSING',
+    });
+}
+
 // Validate config
 const isConfigured = Boolean(
     firebaseConfig.apiKey &&
