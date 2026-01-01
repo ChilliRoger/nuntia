@@ -1,37 +1,42 @@
 import React from 'react';
 import type { Story, Feed } from '@/lib/schema';
 import { formatDistanceToNow } from 'date-fns';
-import { BentoGridItem } from './BentoGrid';
 
 interface FeedCardProps {
-    story: Story & { feed: Feed };
-    featured?: boolean;
+    story: Story & { feed: Pick<Feed, 'id' | 'title' | 'url' | 'iconUrl'> };
 }
 
-export function FeedCard({ story, featured = false }: FeedCardProps) {
+export function FeedCard({ story }: FeedCardProps) {
     const timeAgo = formatDistanceToNow(new Date(story.pubDate), { addSuffix: true });
+    const previewText = story.content?.replace(/<[^>]*>/g, '') || '';
 
     return (
-        <BentoGridItem colSpan={featured ? 2 : 1} rowSpan={featured ? 2 : 1} className="flex flex-col justify-between h-full bg-card border-card-border hover:border-primary transition-colors">
-            <div className="p-4 flex flex-col h-full">
-                <div className="flex items-center justify-between mb-2 text-xs text-muted">
-                    <span className="flex items-center gap-1">
-                        {story.feed.iconUrl && <img src={story.feed.iconUrl} alt="" className="w-4 h-4 rounded-sm" />}
-                        {story.feed.title}
-                    </span>
-                    <span>{timeAgo}</span>
+        <article className="story-card">
+            <div className="story-card-content">
+                <div className="story-meta">
+                    <div className="story-source">
+                        {story.feed.iconUrl ? (
+                            <img src={story.feed.iconUrl} alt="" className="story-source-icon" />
+                        ) : (
+                            <div className="story-source-icon" />
+                        )}
+                        <span>{story.feed.title}</span>
+                    </div>
+                    <time>{timeAgo}</time>
                 </div>
 
-                <a href={story.link} target="_blank" rel="noopener noreferrer" className="group">
-                    <h3 className={`font-serif font-bold mb-2 group-hover:text-primary transition-colors ${featured ? 'text-2xl' : 'text-lg'}`}>
-                        {story.title}
-                    </h3>
+                <a href={story.link} target="_blank" rel="noopener noreferrer">
+                    <h3 className="story-title">{story.title}</h3>
                 </a>
 
-                <p className="text-sm text-secondary-foreground line-clamp-3 mt-auto">
-                    {story.content?.replace(/<[^>]*>/g, '').slice(0, featured ? 200 : 100)}...
-                </p>
+                <p className="story-excerpt">{previewText}</p>
+
+                <div className="story-footer">
+                    <a href={story.link} target="_blank" rel="noopener noreferrer" className="story-link">
+                        Read Full Story →
+                    </a>
+                </div>
             </div>
-        </BentoGridItem>
+        </article>
     );
 }

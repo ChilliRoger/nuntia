@@ -1,10 +1,11 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { feeds, stories } from '@/lib/schema';
+import { feeds, stories, reports } from '@/lib/schema';
 import { parseFeed } from '@/lib/rss';
+import { generateDigest, checkOllamaHealth, listModels } from '@/lib/ollama';
 import { revalidatePath } from 'next/cache';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, gte } from 'drizzle-orm';
 
 export async function addFeed(url: string) {
     try {
@@ -132,3 +133,85 @@ export async function refreshFeeds(formData?: FormData) {
     revalidatePath('/');
     return { success: true };
 }
+
+// ============================================
+// OLLAMA DIGEST ACTIONS
+// ============================================
+
+export async function getOllamaStatus() {
+    const healthy = await checkOllamaHealth();
+    const models = healthy ? await listModels() : [];
+    return { available: healthy, models };
+}
+
+export async function getAvailableModels() {
+    return await listModels();
+}
+
+export async function generateDailyDigest(model?: string) {
+    try {
+        // 1. Check Ollama is available
+        const healthy = await checkOllamaHealth();
+        if (!healthy) {
+            return {
+                success: false,
+                error: 'Ollama is not running. Start it with: ollama serve'
+            };
+        }
+
+        // 2. Get today's stories (last 24 hours)
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const recentStories = await db.select({
+            title: stories.title,
+            content: stories.content,
+            source: feeds.title,
+        })
+            .from(stories)
+            .leftJoin(feeds, eq(stories.feedId, feeds.id))
+            .where(gte(stories.pubDate, oneDayAgo))
+            .orderBy(desc(stories.pubDate))
+            .limit(20);
+
+        if (recentStories.length === 0) {
+            return { success: false, error: 'No stories from the last 24 hours to summarize' };
+        }
+
+        // 3. Generate digest with Ollama
+        const result = await generateDigest(
+            recentStories.map(s => ({
+                title: s.title,
+                content: s.content,
+                source: s.source || 'Unknown',
+            })),
+            model
+        );
+
+        if (!result.success) {
+            return { success: false, error: result.error };
+        }
+
+        // 4. Save report to database
+        const [report] = await db.insert(reports).values({
+            title: `Daily Digest - ${new Date().toLocaleDateString()}`,
+            content: result.content!,
+            storyCount: recentStories.length,
+            model: result.model,
+        }).returning();
+
+        revalidatePath('/');
+        return { success: true, report };
+    } catch (error: any) {
+        console.error('Digest generation error:', error);
+        return { success: false, error: error.message || 'Failed to generate digest' };
+    }
+}
+
+export async function getReports(limit = 10) {
+    return await db.select().from(reports).orderBy(desc(reports.createdAt)).limit(limit);
+}
+
+export async function getLatestReport() {
+    const [report] = await db.select().from(reports).orderBy(desc(reports.createdAt)).limit(1);
+    return report || null;
+}
+

@@ -1,70 +1,69 @@
 import { getStories, getFeeds, refreshFeeds } from './actions';
-import { BentoGrid } from '@/components/BentoGrid';
+import { StoryGrid } from '@/components/StoryGrid';
 import { FeedCard } from '@/components/FeedCard';
 import { FeedManager } from '@/components/FeedManager';
+import { DigestPanel } from '@/components/DigestPanel';
 
-// Revalidate every 15 minutes by default
 export const revalidate = 900;
 
 export default async function Home() {
-  // Fetch data
   const [stories, feeds] = await Promise.all([
     getStories(50),
     getFeeds()
   ]);
 
   return (
-    <main className="container min-h-screen pb-20">
-      <header className="mb-12 mt-8 flex flex-col md:flex-row gap-4 justify-between items-end border-b border-card-border pb-6">
+    <div className="app-container">
+      <header className="app-header">
         <div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-2">
-            <span className="text-primary">N</span>untia.
+          <h1 className="app-title">
+            <span className="highlight">N</span>untia.
           </h1>
-          <p className="text-muted text-lg">Your daily intelligence.</p>
+          <p className="app-subtitle">Your daily intelligence briefing</p>
         </div>
 
-        <form action={refreshFeeds}>
-          <button className="text-sm border border-card-border px-3 py-1 rounded hover:bg-secondary transition-colors text-muted hover:text-foreground">
-            Refresh Now
-          </button>
-        </form>
+        <div className="header-actions">
+          <DigestPanel />
+          <form action={refreshFeeds}>
+            <button type="submit" className="btn btn-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              Refresh
+            </button>
+          </form>
+        </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar / Feed Manager */}
-        <aside className="lg:col-span-1">
+      <main className="main-layout">
+        <aside className="sidebar">
           <FeedManager feeds={feeds} />
-
-          <div className="mt-8 text-xs text-muted opacity-50">
+          <div className="sidebar-footer">
             <p>Nuntia v0.1.0</p>
             <p>Local RSS Aggregator</p>
           </div>
         </aside>
 
-        {/* content */}
-        <section className="lg:col-span-3">
+        <section>
           {stories.length > 0 ? (
-            <BentoGrid>
-              {stories.map((story, i) => (
-                <FeedCard
-                  key={story.id}
-                  story={story}
-                  // Feature the first item and every 7th item for visual variety
-                  featured={i === 0 || i % 7 === 0}
-                />
+            <StoryGrid>
+              {stories.map((story) => (
+                <FeedCard key={story.id} story={story} />
               ))}
-            </BentoGrid>
+            </StoryGrid>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-card-border rounded-lg">
-              <h3 className="text-2xl font-serif mb-2">No stories yet</h3>
-              <p className="text-muted max-w-sm">
-                Add some RSS feeds in the sidebar to get started.
-                Try <code>https://hacker-news.firebaseio.com/v0/topstories.json</code> (Wait, HN is API, use RSS: <code>https://news.ycombinator.com/rss</code>)
+            <div className="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ marginBottom: '1rem', opacity: 0.3 }}>
+                <path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" />
+              </svg>
+              <h3>No stories yet</h3>
+              <p>
+                Add some RSS feeds to get started. Try <code>https://news.ycombinator.com/rss</code>
               </p>
             </div>
           )}
         </section>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

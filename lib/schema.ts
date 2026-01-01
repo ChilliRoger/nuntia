@@ -29,7 +29,19 @@ export const stories = sqliteTable("stories", {
     pubDateIdx: index("pub_date_idx").on(t.pubDate),
 }));
 
+// NEW: Daily Digest Reports table
+export const reports = sqliteTable("reports", {
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    title: text("title").notNull(),
+    content: text("content").notNull(), // Markdown content from LLM
+    storyCount: integer("story_count").notNull(),
+    model: text("model"), // Which Ollama model was used
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+});
+
 export type Feed = typeof feeds.$inferSelect;
 export type NewFeed = typeof feeds.$inferInsert;
 export type Story = typeof stories.$inferSelect;
 export type NewStory = typeof stories.$inferInsert;
+export type Report = typeof reports.$inferSelect;
+export type NewReport = typeof reports.$inferInsert;

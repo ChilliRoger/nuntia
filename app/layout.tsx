@@ -1,17 +1,9 @@
 import type { Metadata } from 'next';
-import { Inter, Merriweather } from 'next/font/google';
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
-const merriweather = Merriweather({
-  weight: ['300', '400', '700', '900'],
-  subsets: ['latin'],
-  variable: '--font-serif'
-});
 
 export const metadata: Metadata = {
   title: 'Nuntia | RSS Reader',
-  description: 'A modern, bento-grid RSS reader.',
+  description: 'A modern, local RSS reader with AI-powered daily digests.',
 };
 
 export default function RootLayout({
@@ -21,7 +13,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${merriweather.variable} font-sans bg-background text-foreground antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      </head>
+      <body>
         {children}
       </body>
     </html>
