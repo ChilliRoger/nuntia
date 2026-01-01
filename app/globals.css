@@ -409,7 +409,7 @@ h6 {
 .story-card {
   display: flex;
   flex-direction: column;
-  height: 280px;
+  height: 320px;
   background: rgba(24, 24, 27, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -510,8 +510,8 @@ h6 {
   line-height: 1.4;
   margin-bottom: 0.5rem;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   transition: color 0.2s;
@@ -540,8 +540,8 @@ h6 {
   color: var(--secondary-foreground);
   line-height: 1.7;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   position: relative;
@@ -764,6 +764,7 @@ h6 {
 
 .digest-header {
   padding: 1.5rem;
+  padding-right: 3.5rem;
   border-bottom: 1px solid var(--card-border);
   display: flex;
   justify-content: space-between;
