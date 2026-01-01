@@ -197,27 +197,26 @@ export function DigestPanel() {
 
                             <div className="ollama-status">
                                 <span className={`status-dot ${ollamaStatus?.available ? 'online' : 'offline'}`} />
-                                Ollama: {ollamaStatus === null ? 'Checking...' : ollamaStatus.available ? 'Connected' : 'Offline'}
+                                Groq AI: {ollamaStatus === null ? 'Checking...' : ollamaStatus.available ? 'Connected' : 'Offline'}
                             </div>
                         </div>
 
-                        {/* Ollama Not Running */}
+                        {/* Groq Not Available */}
                         {ollamaStatus && !ollamaStatus.available && (
                             <div className="ollama-warning">
-                                <p><strong>Ollama is not running.</strong></p>
-                                <p>Start Ollama to generate AI digests:</p>
-                                <code>ollama serve</code>
+                                <p><strong>Groq AI is not configured.</strong></p>
+                                <p>Add GROQ_API_KEY to environment variables.</p>
+                                <p style={{ fontSize: '0.75rem', opacity: 0.7 }}>Get free key at: console.groq.com</p>
                             </div>
                         )}
 
-                        {/* No Models Installed */}
+                        {/* No Models Available */}
                         {ollamaStatus?.available && !hasModels && (
                             <div className="ollama-warning">
-                                <p><strong>No models installed.</strong></p>
-                                <p>Download a model to get started:</p>
-                                <code>ollama pull llama3.2:1b</code>
+                                <p><strong>No models available.</strong></p>
+                                <p>Groq provides free access to multiple models.</p>
                                 <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', opacity: 0.7 }}>
-                                    (1b = 1 billion params, fastest option)
+                                    Select a model from the dropdown above.
                                 </p>
                             </div>
                         )}
