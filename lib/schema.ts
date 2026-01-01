@@ -20,6 +20,7 @@ export const stories = sqliteTable("stories", {
     pubDate: integer("pub_date", { mode: "timestamp" }).notNull(),
     content: text("content"),
     author: text("author"),
+    categories: text("categories"), // JSON array of category strings
     isRead: integer("is_read", { mode: "boolean" }).notNull().default(false),
     isSaved: integer("is_saved", { mode: "boolean" }).notNull().default(false),
     feedId: text("feed_id").notNull().references(() => feeds.id, { onDelete: "cascade" }),

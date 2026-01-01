@@ -50,6 +50,7 @@ export async function addFeed(url: string) {
                 link: item.link || '',
                 pubDate: item.isoDate ? new Date(item.isoDate) : (item.pubDate ? new Date(item.pubDate) : new Date()),
                 content: item.content || item.contentSnippet,
+                categories: item.categories?.length ? JSON.stringify(item.categories) : null,
                 feedId: feedId,
             }));
 
@@ -84,6 +85,7 @@ export async function getStories(limit = 50) {
         pubDate: stories.pubDate,
         content: stories.content,
         author: stories.author,
+        categories: stories.categories,
         isRead: stories.isRead,
         isSaved: stories.isSaved,
         feedId: stories.feedId,
@@ -125,6 +127,7 @@ export async function refreshFeeds(formData?: FormData) {
                 link: item.link || '',
                 pubDate: item.isoDate ? new Date(item.isoDate) : (item.pubDate ? new Date(item.pubDate) : new Date()),
                 content: item.content || item.contentSnippet,
+                categories: item.categories?.length ? JSON.stringify(item.categories) : null,
                 feedId: feed.id,
             }));
             await db.insert(stories).values(values).onConflictDoNothing().execute();

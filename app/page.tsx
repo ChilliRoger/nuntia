@@ -1,5 +1,5 @@
 import { getStories, getFeeds, refreshFeeds } from './actions';
-import { StoryGrid } from '@/components/StoryGrid';
+import { StoryBrowser } from '@/components/StoryBrowser';
 import { FeedCard } from '@/components/FeedCard';
 import { FeedManager } from '@/components/FeedManager';
 import { DigestPanel } from '@/components/DigestPanel';
@@ -48,11 +48,7 @@ export default async function Home() {
 
         <section>
           {stories.length > 0 ? (
-            <StoryGrid>
-              {stories.map((story) => (
-                <FeedCard key={story.id} story={story} />
-              ))}
-            </StoryGrid>
+            <StoryBrowser initialStories={stories} />
           ) : (
             <div className="empty-state">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" style={{ marginBottom: '1rem', opacity: 0.3 }}>
