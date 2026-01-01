@@ -3,12 +3,7 @@
 import React, { useState } from 'react';
 import { addFeed, deleteFeed } from '@/app/actions';
 import { Plus, Trash2, Rss } from 'lucide-react';
-
-interface Feed {
-    id: string;
-    url: string;
-    title?: string | null;
-}
+import type { Feed } from '@/lib/schema';
 
 export function FeedManager({ feeds }: { feeds: Feed[] }) {
     const [url, setUrl] = useState('');
@@ -21,8 +16,8 @@ export function FeedManager({ feeds }: { feeds: Feed[] }) {
         setError(null);
 
         const res = await addFeed(url);
-        if (!res.success) {
-            setError(res.error || 'Failed to add feed');
+        if (!res?.success) {
+            setError(res?.error || 'Failed to add feed');
         } else {
             setUrl('');
         }

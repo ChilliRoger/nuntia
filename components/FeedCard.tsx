@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Story, Feed } from '@prisma/client';
+import type { Story, Feed } from '@/lib/schema';
 import { formatDistanceToNow } from 'date-fns';
 import { BentoGridItem } from './BentoGrid';
 

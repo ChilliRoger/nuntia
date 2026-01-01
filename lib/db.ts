@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client'
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import * as schema from "./schema";
 
-const globalForPrisma = globalThis as unknown as {
-    prisma: PrismaClient | undefined
-}
-
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Create db file if not exists
+const sqlite = new Database("sqlite.db");
+export const db = drizzle(sqlite, { schema });
