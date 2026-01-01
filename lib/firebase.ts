@@ -1,10 +1,11 @@
 /**
  * Firebase Configuration
  * Client-side Firebase initialization for authentication
+ * Production-ready with comprehensive error handling
  */
 
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,17 +23,41 @@ const isConfigured = Boolean(
     firebaseConfig.projectId
 );
 
-if (!isConfigured && typeof window !== 'undefined') {
-    console.warn('Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* env vars.');
+if (typeof window !== 'undefined') {
+    console.log('Firebase Configuration Status:', {
+        apiKey: firebaseConfig.apiKey ? '✓ Set' : '✗ Missing',
+        authDomain: firebaseConfig.authDomain ? '✓ Set' : '✗ Missing',
+        projectId: firebaseConfig.projectId ? '✓ Set' : '✗ Missing',
+        storageBucket: firebaseConfig.storageBucket ? '✓ Set' : '✗ Missing',
+        messagingSenderId: firebaseConfig.messagingSenderId ? '✓ Set' : '✗ Missing',
+        appId: firebaseConfig.appId ? '✓ Set' : '✗ Missing',
+        isConfigured
+    });
+    
+    if (!isConfigured) {
+        console.error('Firebase is not fully configured. Add NEXT_PUBLIC_FIREBASE_* env vars.');
+    }
 }
 
 // Initialize Firebase (singleton pattern for Next.js)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
+let app: FirebaseApp;
+let auth: Auth;
 
-// Use emulator in development (optional)
-if (process.env.NODE_ENV === 'development' && process.env.FIREBASE_AUTH_EMULATOR_HOST) {
-    connectAuthEmulator(auth, `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}`);
+try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    auth = getAuth(app);
+
+    // Use emulator in development (optional)
+    if (process.env.NODE_ENV === 'development' && process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+        connectAuthEmulator(auth, `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}`);
+    }
+
+    if (typeof window !== 'undefined' && isConfigured) {
+        console.log('✅ Firebase initialized successfully');
+    }
+} catch (error) {
+    console.error('❌ Firebase initialization failed:', error);
+    throw error;
 }
 
 export { app, auth, isConfigured };

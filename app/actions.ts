@@ -151,9 +151,15 @@ export async function generateDailyDigest(model?: string, userId: string | null 
         // 1. Check Ollama is available
         const healthy = await checkOllamaHealth();
         if (!healthy) {
+            // Provide different messages for different environments
+            const isVercel = process.env.VERCEL === '1';
+            const errorMessage = isVercel
+                ? 'AI digest generation is not available on this deployment. Ollama requires a local server.'
+                : 'Ollama is not running. Start it locally with: ollama serve';
+            
             return {
                 success: false,
-                error: 'Ollama is not running. Start it with: ollama serve'
+                error: errorMessage
             };
         }
 

@@ -1,9 +1,17 @@
 /**
  * Ollama Service - Connects to local Ollama instance
  * Production-ready with model detection and comprehensive error handling
+ * Gracefully degrades when Ollama is not available (e.g., in serverless)
  */
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const IS_VERCEL = process.env.VERCEL === '1';
+
+// Warn if Ollama is expected but not configured properly
+if (IS_PRODUCTION && IS_VERCEL && typeof window === 'undefined') {
+    console.warn('⚠️ Ollama is not available in Vercel serverless environment. Digest generation will be disabled.');
+}
 
 interface OllamaModel {
     name: string;
@@ -20,15 +28,23 @@ interface OllamaGenerateResponse {
 
 /**
  * Check if Ollama server is running
+ * Returns false in serverless environments
  */
 export async function checkOllamaHealth(): Promise<boolean> {
+    // Ollama doesn't work in serverless environments
+    if (IS_VERCEL) {
+        console.log('ℹ️ Ollama health check skipped (serverless environment)');
+        return false;
+    }
+
     try {
         const res = await fetch(`${OLLAMA_BASE_URL}/api/tags`, {
             method: 'GET',
             signal: AbortSignal.timeout(5000),
         });
         return res.ok;
-    } catch {
+    } catch (error) {
+        console.log('ℹ️ Ollama not available:', error instanceof Error ? error.message : 'Unknown error');
         return false;
     }
 }

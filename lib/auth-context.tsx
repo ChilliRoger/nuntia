@@ -96,8 +96,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(null);
         try {
             const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
+            console.log('Attempting Google Sign-In...');
+            const result = await signInWithPopup(auth, provider);
+            console.log('Google Sign-In successful:', result.user.email);
         } catch (err: any) {
+            console.error('Google Sign-In Error:', {
+                code: err.code,
+                message: err.message,
+                fullError: err
+            });
             const message = getFirebaseErrorMessage(err.code);
             setError(message);
             throw new Error(message);
@@ -140,7 +147,7 @@ function getFirebaseErrorMessage(code: string): string {
         case 'auth/invalid-email':
             return 'Please enter a valid email address.';
         case 'auth/operation-not-allowed':
-            return 'Email/password sign-in is not enabled.';
+            return 'Google Sign-In is not enabled. Please contact support.';
         case 'auth/weak-password':
             return 'Password should be at least 6 characters.';
         case 'auth/user-disabled':
@@ -151,7 +158,18 @@ function getFirebaseErrorMessage(code: string): string {
             return 'Invalid email or password.';
         case 'auth/too-many-requests':
             return 'Too many attempts. Please try again later.';
+        case 'auth/popup-closed-by-user':
+            return 'Sign-in cancelled. Please try again.';
+        case 'auth/popup-blocked':
+            return 'Popup blocked. Please allow popups for this site.';
+        case 'auth/unauthorized-domain':
+            return 'This domain is not authorized. Please contact support.';
+        case 'auth/cancelled-popup-request':
+            return 'Sign-in cancelled. Please try again.';
+        case 'auth/internal-error':
+            return 'Internal error. Please check your configuration.';
         default:
-            return 'An error occurred. Please try again.';
+            console.warn('Unhandled Firebase error code:', code);
+            return `Authentication error: ${code}. Please try again or contact support.`;
     }
 }
