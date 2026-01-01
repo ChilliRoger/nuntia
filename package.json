@@ -10,10 +10,11 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "better-sqlite3": "^11.8.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.39.1",
-    "better-sqlite3": "^11.8.1",
+    "firebase": "^12.7.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
@@ -22,10 +23,10 @@
     "tailwind-merge": "^3.0.1"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/better-sqlite3": "^7.6.12",
     "drizzle-kit": "^0.30.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",

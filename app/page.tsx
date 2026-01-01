@@ -3,6 +3,7 @@ import { StoryGrid } from '@/components/StoryGrid';
 import { FeedCard } from '@/components/FeedCard';
 import { FeedManager } from '@/components/FeedManager';
 import { DigestPanel } from '@/components/DigestPanel';
+import { UserMenu } from '@/components/UserMenu';
 
 export const revalidate = 900;
 
@@ -32,6 +33,7 @@ export default async function Home() {
               Refresh
             </button>
           </form>
+          <UserMenu />
         </div>
       </header>
 

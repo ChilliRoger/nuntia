@@ -131,7 +131,6 @@ export async function refreshFeeds(formData?: FormData) {
         }
     }
     revalidatePath('/');
-    return { success: true };
 }
 
 // ============================================
