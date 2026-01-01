@@ -3,27 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const SUGGESTED_FEEDS = [
-    { name: 'Hacker News', url: 'https://news.ycombinator.com/rss' },
-    { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml' },
-    { name: 'TechCrunch', url: 'https://techcrunch.com/feed/' },
-    { name: 'BBC World News', url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
-    { name: 'NYT Technology', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml' },
-    { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index' },
-    { name: 'Wired', url: 'https://www.wired.com/feed/rss' },
-    { name: 'Dev.to', url: 'https://dev.to/feed' },
-    { name: 'Smashing Magazine', url: 'https://www.smashingmagazine.com/feed/' },
-    { name: 'A List Apart', url: 'https://alistapart.com/main/feed/' },
-    { name: 'Scientific American', url: 'http://rss.sciam.com/ScientificAmerican-Global' },
-    { name: 'NASA Breaking News', url: 'https://www.nasa.gov/rss/dyn/breaking_news.rss' },
-    { name: 'The Next Web', url: 'https://thenextweb.com/feed/' },
-    { name: 'Engadget', url: 'https://www.engadget.com/rss.xml' },
-    { name: '9to5Mac', url: 'https://9to5mac.com/feed/' },
-    { name: 'CSS-Tricks', url: 'https://css-tricks.com/feed/' },
-    { name: 'Slashdot', url: 'https://slashdot.org/slashdot.rss' },
-    { name: 'Hugging Face Blog', url: 'https://huggingface.co/blog/feed.xml' },
-];
-
 export function HelpButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -46,6 +25,16 @@ export function HelpButton() {
                 <p className="modal-subtitle">Your local intelligence briefing aggregator.</p>
 
                 <div className="help-content" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                    <section style={{ marginBottom: '1.5rem' }}>
+                        <h4 style={{ color: 'var(--primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /></svg>
+                            About Nuntia
+                        </h4>
+                        <p style={{ fontSize: '0.94rem', opacity: 0.9 }}>
+                            Nuntia is a modern, high-performance RSS reader designed for power users who value privacy and speed. It transforms messy web feeds into a clean, searchable intelligence stream, powered by local AI analysis.
+                        </p>
+                    </section>
+
                     <section style={{ marginBottom: '1.5rem' }}>
                         <h4 style={{ color: 'var(--primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
@@ -79,35 +68,6 @@ export function HelpButton() {
                             <li><strong>Filters:</strong> Use the topic chips above the stories to drill down into specific areas like "AI" or "Security".</li>
                         </ul>
                     </section>
-
-                    <section>
-                        <h4 style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>Suggested Feeds</h4>
-                        <p style={{ fontSize: '0.875rem', marginBottom: '1rem', opacity: 0.7 }}>
-                            Not sure where to start? Try these popular RSS feeds:
-                        </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
-                            {SUGGESTED_FEEDS.map((feed) => (
-                                <div key={feed.url} style={{
-                                    padding: '0.75rem',
-                                    background: 'var(--secondary)',
-                                    borderRadius: '8px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '0.25rem'
-                                }}>
-                                    <span style={{ fontWeight: '600', fontSize: '0.875rem' }}>{feed.name}</span>
-                                    <code style={{
-                                        fontSize: '0.75rem',
-                                        background: 'rgba(0,0,0,0.3)',
-                                        padding: '0.25rem 0.5rem',
-                                        borderRadius: '4px',
-                                        color: 'var(--primary)',
-                                        wordBreak: 'break-all'
-                                    }}>{feed.url}</code>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
                 </div>
 
                 <div className="modal-actions">
@@ -128,7 +88,7 @@ export function HelpButton() {
 
     return (
         <>
-            <button className="btn btn-secondary" onClick={() => setIsOpen(true)} title="Help & Suggested Feeds">
+            <button className="btn btn-secondary" onClick={() => setIsOpen(true)} title="Help Center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />

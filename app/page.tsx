@@ -5,6 +5,7 @@ import { DigestPanel } from '@/components/DigestPanel';
 import { HelpButton } from '@/components/HelpButton';
 import { UserMenu } from '@/components/UserMenu';
 import { RefreshButton } from '@/components/RefreshButton';
+import { SuggestedFeedsButton } from '@/components/SuggestedFeedsButton';
 
 export const revalidate = 900;
 
@@ -26,6 +27,7 @@ export default async function Home() {
 
         <div className="header-actions">
           <HelpButton />
+          <SuggestedFeedsButton />
           <RefreshButton />
           <DigestPanel />
           <UserMenu />

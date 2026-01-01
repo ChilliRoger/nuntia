@@ -199,9 +199,10 @@ export async function generateDailyDigest(model?: string, userId: string | null 
 
         revalidatePath('/');
         return { success: true, report };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Digest generation error:', error);
-        return { success: false, error: error.message || 'Failed to generate digest' };
+        const msg = error instanceof Error ? error.message : 'Failed to generate digest';
+        return { success: false, error: msg };
     }
 }
 

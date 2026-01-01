@@ -35,8 +35,9 @@ export function FeedManager({ feeds: initialFeeds }: { feeds: Feed[] }) {
         setError(null);
 
         const res = await addFeed(url, user.uid);
-        if (!res?.success) {
-            setError(res?.error || 'Failed to add feed');
+        const typedRes = res as { success: boolean; error?: string };
+        if (!typedRes.success) {
+            setError(typedRes.error || 'Failed to add feed');
         } else {
             setUrl('');
             setIsOpen(false);

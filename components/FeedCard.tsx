@@ -82,11 +82,12 @@ export function FeedCard({ story }: FeedCardProps) {
         topics = ['News'];
     }
 
-    const renderText = (val: any) => {
+    const renderText = (val: unknown): string => {
         if (typeof val === 'string') return val;
         if (!val) return '';
-        if (typeof val === 'object') {
-            return val._ || val.name || JSON.stringify(val);
+        if (typeof val === 'object' && val !== null) {
+            const obj = val as Record<string, unknown>;
+            return (obj._ as string) || (obj.name as string) || JSON.stringify(val);
         }
         return String(val);
     };
